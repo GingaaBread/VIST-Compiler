@@ -1,10 +1,18 @@
-import syntax.Lexer;
+import generation.VIST;
 
+/**
+ *  A sample use of the VIST compiler *  
+ */
 public class App {
+    /**
+     * @param args
+     * @throws Exception
+     */
     public static void main(String[] args) throws Exception {
-        var lexer = new Lexer();
-        final String in = "x IS 256;";
+        final String test = "highscore IS 25929;";
+        VIST vist = new VIST(test);
 
-        lexer.match(in);
+        int score = vist.retrieveInt("highscore");
+        System.out.println(score);    
     }
 }
