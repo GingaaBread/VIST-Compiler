@@ -1,7 +1,5 @@
 package syntax;
 
-import javax.security.auth.login.CredentialException;
-
 public class Lexer {
     private String text;
     private char currentToken;
@@ -125,6 +123,12 @@ public class Lexer {
         /** TRY TO MATCH JSON VALUES */
 
         /// STRING
+        else if (currentToken == '\"') {
+            next();
+            while (currentToken != '\"') {
+               next();
+            }
+        }
 
         /// NUMBER (int or float)
         else if (Character.isDigit(currentToken) ||  currentToken == '.') {
