@@ -128,23 +128,31 @@ public class Lexer {
 
         /// NUMBER (int or float)
         else if (Character.isDigit(currentToken) ||  currentToken == '.') {
-            if (currentToken == '.') next();
+            boolean fullstopUsed = false;
 
+            if (currentToken == '.')
+            {
+                fullstopUsed = true;
+                next();
+            } 
+
+            if (!Character.isDigit(currentToken)) throw new Exception("Float Value Syntax Error: Digit after the full-stop expected");
             while (Character.isDigit(currentToken)) {
                 next();
             }
 
             if (currentToken == '.') {
+                if (fullstopUsed) throw new Exception("Float Value Syntax Error: Duplicate full-stop found");
+                
                 next();
 
                 if (!Character.isDigit(currentToken)) throw new Exception("Float Value Syntax Error: Digit after the full-stop expected");
-                
                 while (Character.isDigit(currentToken)) {
                     next();
                 }
 
                 if (!isWS(currentToken) && currentToken != ';') throw new Exception("Number Value Syntax Error: WS expected");
-            } else throw new Exception("Number Value Syntax Error: Unexpected character");
+            } else if (currentToken != ';' && !isWS(currentToken)) throw new Exception("Number Value Syntax Error: Unexpected character: " + currentToken);
         }
 
 
@@ -154,9 +162,14 @@ public class Lexer {
 
     private void matchSeperator() throws Exception {
         matchOptionalWS();
-        if (currentToken == ';') next();
+        if (currentToken == ';') {
+            next();
+            System.out.println("Successfully created the variable block");
+        }
         else throw new Exception("Seperator Syntax Error: ; expected");
-        matchWS();
+
+        // Only match WS if this wasn't the last content
+        if (index + 1 < text.length()) matchWS();
     }
 
     private void matchIdentifier() throws Exception {
@@ -191,16 +204,17 @@ public class Lexer {
 
     // WhiteSpace (WS) is defined as either: a space, tab, new line, carriage return
     private boolean isWS(char token) {
-        return token == ' ' || token == '\t' || token == '\n' || token == '\r';
+        return token == ' ' || token == '\t' || token == '\n' || token == '\r' || Character.isWhitespace(token);
     }
 
     // Management
 
     private void next() throws Exception {
-        if (index + 1 >= text.length()) throw new Exception("Syntax Error: End of VIST file reached without resolve");
-        
-        // Increments the token
-        index++;
-        currentToken = text.charAt(index);
+        //if (index + 1 >= text.length()) throw new Exception("Syntax Error: End of VIST file reached without resolve");
+        if (index + 1 < text.length()) {
+            // Increments the token
+            index++;
+            currentToken = text.charAt(index);
+        }
     }
 }
