@@ -42,9 +42,15 @@ public class Lexer {
      * Parses the entire text, providing results to the Collector class
      */
     public void match(String text) throws VISTSyntaxException {
+        // Setup scanning variables
         this.text = text;
         currentToken = text.charAt(index);
+        
+        // Initiate parsing
         matchVariableBlockSequence();
+
+        // Collect all VIST objects
+        collector.collect(baseObject);
     }
 
     // VariableBlockSequence := *( VariableBlock )
@@ -69,7 +75,7 @@ public class Lexer {
         // Check if object
         else if (Character.toLowerCase(currentToken) == 'h') {
             matchObjectTypeAssignment();
-            matchWS();
+            matchOptionalWS();
             matchObjectTypeBody();
         }
     }
@@ -95,7 +101,7 @@ public class Lexer {
         else next();
     }
 
-    // ObjectTypeBody := "(" WS VariableBlockSequence WS ")" *( WS ) Separator
+    // ObjectTypeBody := "(" *( VariableBlock ) ")" *( WS ) Separator
     private void matchObjectTypeBody() {
         if (currentToken != '(') throw new VISTSyntaxException("Object Type Body Syntax Error: Illegal Character, '(' expected. Found: " + currentToken);
         else next();
@@ -103,19 +109,25 @@ public class Lexer {
         // Registers the object
         objectDepth++;
         if (objectDepth == 1) {
-            baseObject = new VISTObject();
+            baseObject = new VISTObject(currentName);
         } else {
-            baseObject.addObject(new VISTObject(), objectDepth);
+            baseObject.addObject(new VISTObject(currentName), objectDepth);
         }
 
-        matchWS();
-        matchVariableBlockSequence();
-        matchWS();
+        matchOptionalWS();
+
+        while (currentToken != ')') {
+            matchVariableBlock();
+        }
 
         if (currentToken != ')') throw new VISTSyntaxException("Object Type Body Syntax Error: Illegal Character, ')' expected. Found: " + currentToken);
         else next();
 
+
         matchSeparator();
+        
+        objectDepth--;        
+        baseObject.print();
     }
 
     // Matches either literals, a char, a colour, or any JSON value
@@ -281,11 +293,15 @@ public class Lexer {
     // Separator := ( WS ) ";" ( WS )
     private void matchSeparator() throws VISTSyntaxException {
         matchOptionalWS();
-        if (currentToken == ';') {            
-            // Collects the result
-            System.out.println("Successfully created the variable: " + currentName + ", (" + currentType + ") with the value: " + currentValue);
-            collector.collect(currentName, currentValue, currentType);
-            
+        if (currentToken == ';') {        
+            if (objectDepth == 0) {
+                // Collects the result
+                System.out.println("Successfully created the variable: " + currentName + ", (" + currentType + ") with the value: " + currentValue);
+                collector.collect(currentName, currentValue, currentType);
+            }
+            else {
+
+            }
             // Resets the variable variables
             currentName = "";
             currentType = null;

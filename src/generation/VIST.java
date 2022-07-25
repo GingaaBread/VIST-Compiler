@@ -26,6 +26,8 @@ public class VIST {
 
     /// RETRIEVERS
 
+    public Object retrieveFrom(final String objectPath, String variableName) { return collector.retrieveFrom(objectPath, variableName); }
+
     /**
      * 
      * @param variableName The name of the String variable 

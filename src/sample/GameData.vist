@@ -1,3 +1,6 @@
-highscore IS 2591;
-playerName IS "John Doe";
-xp IS 2552;
+a HAS (
+    test IS 5;
+);
+b HAS ();
+c HAS();
+i IS 5;

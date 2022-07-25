@@ -1,7 +1,11 @@
 package utility;
 
+import java.util.Currency;
 import java.util.LinkedList;
 import java.util.List;
+
+import syntax.VISTObject;
+import syntax.VISTSyntaxException;
 
 /**
  *  @author Gino Glink
@@ -21,6 +25,9 @@ public class Collector {
 
     // Keeps track of identifiers to prevent non-unique variable names
     private List<String> identifiers;
+
+    // Keeps track of all VIST objects
+    private VISTObject baseObject;
 
     // Initialises all lists
     public Collector() {
@@ -82,7 +89,44 @@ public class Collector {
         }
     }
 
+    /**
+     * 
+     * @param baseObject The base node of the VIST object tree
+     * 
+     * Collects the base object
+     */
+    public void collect(final VISTObject baseObject) {
+        this.baseObject = baseObject;
+    }
+
     // RETRIEVERS
+
+    /**
+     * ! 0(n^2) 
+     * @param objectPath The path to the variable in the following format: *( ObjectIdentifier "/")
+     * @param variableName
+     * @return
+     */
+    public Object retrieveFrom(String objectPath, String variableName) {
+        String[] paths = objectPath.split("/");
+        VISTObject current = baseObject;
+        
+        for (String vistObjectName : paths) {
+            for (int i = 0; i < current.getObjectTypeChildren().size(); i++) {
+                System.out.println(current.getObjectTypeChildren().get(i).getIdentifier());
+                if (vistObjectName.equals(current.getObjectTypeChildren().get(i).getIdentifier())) {
+                    current = current.getObjectTypeChildren().get(i);
+                }
+            }
+        }
+
+        for (int i = 0; i < current.getSimpleTypeChildren().size(); i++) {
+            if (variableName.equals(current.getIdentifier()))
+                return current.getSimpleTypeChildren().get(i);
+        } 
+
+        throw new VISTSyntaxException("Invalid VIST Variable Name: " + variableName + " was not found in /" + current.getIdentifier());
+    }
 
     public boolean retrieveBoolean(String variableName) {
         for (var variableNameValuePair : booleanVariables)
