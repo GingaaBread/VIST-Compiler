@@ -12,18 +12,16 @@ import utility.VISTVariableNotFoundException;
  *  Reads a VIST document, and allows retrieving its variables as Java variables
  */
 public class VIST {
-    private String vistDocument; // the VIST document passed by the user
     private Collector collector; // the collector storing the parsed variables
     private Lexer lexer; // the lexer compiling the document
 
     // Initialises the variables and automatically begins parsing
     public VIST(final String vistDocument) {
-        this.vistDocument = vistDocument;
-
         collector = new Collector();
         lexer = new Lexer(collector);
 
-        parse();
+        // Begins the parsing process in the lexer
+        lexer.match(vistDocument);
     }
 
     /// RETRIEVERS
@@ -68,8 +66,4 @@ public class VIST {
      */
     public int retrieveInt(final String variableName) { return collector.retrieveInt(variableName); }
 
-    // Begins the matching process in the lexer
-    private void parse() {
-        lexer.match(vistDocument);
-    }
 }

@@ -11,13 +11,16 @@ import java.util.List;
  *  Collects and manages all compiled variables
  */
 public class Collector {
-    // LISTS TO KEEP TRACK OF VARIABLE TYPES    
+    /// LISTS TO KEEP TRACK OF VARIABLE TYPES    
     private List<VariableNameValuePair<String>> stringVariables;
     private List<VariableNameValuePair<Character>> charVariables;
     private List<VariableNameValuePair<Integer>> intVariables;
     private List<VariableNameValuePair<Float>> floatVariables;
     private List<VariableNameValuePair<Boolean>> booleanVariables;
     //private List<ColorType> colourVariables;
+
+    // Keeps track of identifiers to prevent non-unique variable names
+    private List<String> identifiers;
 
     // Initialises all lists
     public Collector() {
@@ -26,7 +29,21 @@ public class Collector {
         intVariables = new LinkedList<>();
         floatVariables = new LinkedList<>();
         booleanVariables = new LinkedList<>();
+
+        identifiers = new LinkedList<>();
         //colourVariables = new LinkedList<>();
+    }
+
+    /**
+     * 
+     * @param identifier The variable name identifier
+     * @return true if the identifier already existed, false if it was reserved
+     */
+    public boolean reserveIdentifier(String identifier) {
+        if (identifiers.contains(identifier)) return true;
+
+        identifiers.add(identifier);
+        return false;
     }
 
     /**

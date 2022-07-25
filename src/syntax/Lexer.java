@@ -2,49 +2,120 @@ package syntax;
 
 import utility.Collector;
 import utility.SimpleType;
+import utility.VISTSemanticException;
 
+/**
+ *  @author Gino Glink
+ *  @version 1.0
+ *  @since 1.0
+ * 
+ *  Scans VIST Documents, adds successfully parsed variables to the Collector class, and 
+ *  throws VISTSyntaxExceptions when the input does not adhere to the correct VIST grammar
+ * 
+ *  @see Collector
+ *  @see VISTSyntaxException
+ */
 public class Lexer {
+    /// SCANNING VARIABLES
     private String text;
     private char currentToken;
     private int index;
 
+    /// VARIABLE COLLECTION VARIABLES
     private String currentValue, currentName;
     private SimpleType currentType;
+    private VISTObject baseObject;
+    private int objectDepth;
     
-    private Collector collector;
+    // Used for collecting successfully parsed variables
+    private final Collector collector;
 
     public Lexer(Collector collector) {
         this.collector = collector;
     }
 
+    /**
+     * 
+     * @param text: The VIST document text to be matched
+     * @throws VISTSyntaxException
+     * 
+     * Parses the entire text, providing results to the Collector class
+     */
     public void match(String text) throws VISTSyntaxException {
         this.text = text;
         currentToken = text.charAt(index);
-
-        matchVariableBlock();
+        matchVariableBlockSequence();
     }
 
-    // VariableBlock
-    private void matchVariableBlock() throws VISTSyntaxException {
-        // If the currentToken is WS, throw an error
-        if (isWS(currentToken)) throw new VISTSyntaxException("VariableBlock Syntax Error: Illegal WS, Expected: identifier");
+    // VariableBlockSequence := *( VariableBlock )
+    private void matchVariableBlockSequence() {
+        while (hasNext()) {
+            matchVariableBlock();
+        }
+    }
 
-        // Check for Identifier -> WS -> PrimitiveTypeAssignment -> WS -> Value -> Separator
+    // VariableBlock := Identifier WS PrimitiveTypeAssignment WS Value Separator
+    private void matchVariableBlock() throws VISTSyntaxException {
         matchIdentifier();
         matchWS();
-        matchPrimitiveTypeAssignment();
-        matchWS();
-        matchValue();
-        matchSeparator();
+
+        // Check if primitive
+        if (Character.toLowerCase(currentToken) == 'i') {
+            matchPrimitiveTypeAssignment();
+            matchWS();
+            matchValue();
+            matchSeparator();
+        }
+        // Check if object
+        else if (Character.toLowerCase(currentToken) == 'h') {
+            matchObjectTypeAssignment();
+            matchWS();
+            matchObjectTypeBody();
+        }
     }
 
     // Matches the primitive type assignment keyword "IS" (tolowercase)
     private void matchPrimitiveTypeAssignment() throws VISTSyntaxException {
-        if (Character.toLowerCase(currentToken) != 'i') throw new VISTSyntaxException("Primitive Type Assignment Syntax Error: Illegal Character, i/I expected");
+        if (Character.toLowerCase(currentToken) != 'i') throw new VISTSyntaxException("Primitive Type Assignment Syntax Error: Illegal Character, i/I expected. Found: " + currentToken);
         else next();
 
-        if (Character.toLowerCase(currentToken) != 's') throw new VISTSyntaxException("Primitive Type Assignment Syntax Error: Illegal Character, s/S expected");
+        if (Character.toLowerCase(currentToken) != 's') throw new VISTSyntaxException("Primitive Type Assignment Syntax Error: Illegal Character, s/S expected. Found: " + currentToken);
         else next();
+    }
+
+    // Matches the object type assignment keyword "HAS" (tolowercase)
+    private void matchObjectTypeAssignment() throws VISTSyntaxException {
+        if (Character.toLowerCase(currentToken) != 'h') throw new VISTSyntaxException("Object Type Assignment Syntax Error: Illegal Character, h/H expected. Found: " + currentToken);
+        else next();
+
+        if (Character.toLowerCase(currentToken) != 'a') throw new VISTSyntaxException("Object Type Assignment Syntax Error: Illegal Character, a/A expected. Found: " + currentToken);
+        else next();
+
+        if (Character.toLowerCase(currentToken) != 's') throw new VISTSyntaxException("Object Type Assignment Syntax Error: Illegal Character, s/S expected. Found: " + currentToken);
+        else next();
+    }
+
+    // ObjectTypeBody := "(" WS VariableBlockSequence WS ")" *( WS ) Separator
+    private void matchObjectTypeBody() {
+        if (currentToken != '(') throw new VISTSyntaxException("Object Type Body Syntax Error: Illegal Character, '(' expected. Found: " + currentToken);
+        else next();
+
+        // Registers the object
+        objectDepth++;
+        if (objectDepth == 1) {
+            baseObject = new VISTObject();
+        } else {
+            baseObject.addObject(new VISTObject(), objectDepth);
+        }
+
+        matchWS();
+        matchVariableBlockSequence();
+        matchWS();
+
+        if (currentToken != ')') throw new VISTSyntaxException("Object Type Body Syntax Error: Illegal Character, ')' expected. Found: " + currentToken);
+        else next();
+
+        matchSeparator();
     }
 
     // Matches either literals, a char, a colour, or any JSON value
@@ -61,9 +132,9 @@ public class Lexer {
                     if (Character.toLowerCase(currentToken) == 'l') {
                         currentValue = "null";
                         next();
-                    } else throw new VISTSyntaxException("NULL Literal Value Syntax Error: l/L expected");
-                } else throw new VISTSyntaxException("NULL Literal Value Syntax Error: l/L expected");
-            } else throw new VISTSyntaxException("NULL Literal Value Syntax Error: u/U expected");
+                    } else throw new VISTSyntaxException("NULL Literal Value Syntax Error: l/L expected. Found: " + currentToken);
+                } else throw new VISTSyntaxException("NULL Literal Value Syntax Error: l/L expected. Found: " + currentToken);
+            } else throw new VISTSyntaxException("NULL Literal Value Syntax Error: u/U expected. Found: " + currentToken);
         }
 
         // Try to match the TRUE literal
@@ -77,9 +148,9 @@ public class Lexer {
                         currentValue = "true";
                         currentType = SimpleType.BOOLEAN;
                         next();
-                    } else throw new VISTSyntaxException("TRUE Literal Value Syntax Error: e/E expected");
-                } else throw new VISTSyntaxException("TRUE Literal Value Syntax Error: u/U expected");
-            } else throw new VISTSyntaxException("TRUE Literal Value Syntax Error: r/R expected");
+                    } else throw new VISTSyntaxException("TRUE Literal Value Syntax Error: e/E expected. Found: " + currentToken);
+                } else throw new VISTSyntaxException("TRUE Literal Value Syntax Error: u/U expected. Found: " + currentToken);
+            } else throw new VISTSyntaxException("TRUE Literal Value Syntax Error: r/R expected. Found: " + currentToken);
         } 
 
         // Try to match the FALSE literal
@@ -95,10 +166,10 @@ public class Lexer {
                             currentValue = "false";
                             currentType = SimpleType.BOOLEAN;
                             next();
-                        } else throw new VISTSyntaxException("FALSE Literal Value Syntax Error: e/E expected");
-                    } else throw new VISTSyntaxException("FALSE Literal Value Syntax Error: s/S expected");
-                } else throw new VISTSyntaxException("FALSE Literal Value Syntax Error: l/L expected");
-            } else throw new VISTSyntaxException("FALSE Literal Value Syntax Error: a/A expected");
+                        } else throw new VISTSyntaxException("FALSE Literal Value Syntax Error: e/E expected. Found: " + currentToken);
+                    } else throw new VISTSyntaxException("FALSE Literal Value Syntax Error: s/S expected. Found: " + currentToken);
+                } else throw new VISTSyntaxException("FALSE Literal Value Syntax Error: l/L expected. Found: " + currentToken);
+            } else throw new VISTSyntaxException("FALSE Literal Value Syntax Error: a/A expected. Found: " + currentToken);
         } 
 
         /** TRY TO MATCH A CHAR */
@@ -112,7 +183,7 @@ public class Lexer {
 
             if (currentToken == '\'') {
                 next();
-            } else throw new VISTSyntaxException("Char Value Syntax Error: ' expected");
+            } else throw new VISTSyntaxException("Char Value Syntax Error: ' expected. Found: " + currentToken);
         }
 
         /** TRY TO MATCH A COLOUR */
@@ -141,7 +212,7 @@ public class Lexer {
                         bobTheBuilder.append(currentToken);
                         next();
                     }
-                    else throw new VISTSyntaxException("Colour Value Syntax Error: Letter or Digit expected");
+                    else throw new VISTSyntaxException("Colour Value Syntax Error: Letter or Digit expected. Found: " + currentToken);
                 }
             }
 
@@ -178,19 +249,19 @@ public class Lexer {
                 next();
             } 
 
-            if (!Character.isDigit(currentToken)) throw new VISTSyntaxException("Float Value Syntax Error: Digit after the full-stop expected");
+            if (!Character.isDigit(currentToken)) throw new VISTSyntaxException("Float Value Syntax Error: Digit after the full-stop expected. Found: " + currentToken);
             while (Character.isDigit(currentToken)) {
                 bobTheBuilder.append(currentToken);
                 next();
             }
 
             if (currentToken == '.') {
-                if (fullstopUsed) throw new VISTSyntaxException("Float Value Syntax Error: Duplicate full-stop found");
+                if (fullstopUsed) throw new VISTSyntaxException("Float Value Syntax Error: Duplicate full-stop found. Found: " + currentToken);
                 
                 bobTheBuilder.append(".");
                 next();
 
-                if (!Character.isDigit(currentToken)) throw new VISTSyntaxException("Float Value Syntax Error: Digit after the full-stop expected");
+                if (!Character.isDigit(currentToken)) throw new VISTSyntaxException("Float Value Syntax Error: Digit after the full-stop expected. Found: " + currentToken);
                 while (Character.isDigit(currentToken)) {
                     bobTheBuilder.append(currentToken);
                     next();
@@ -203,10 +274,11 @@ public class Lexer {
             currentType = fullstopUsed ? SimpleType.FLOAT : SimpleType.INT;
         }
 
-        // Else, there token is illegal
+        // Else, the token is illegal
         else throw new VISTSyntaxException("Value Syntax Error: Illegal character: " + currentToken);
     }
 
+    // Separator := ( WS ) ";" ( WS )
     private void matchSeparator() throws VISTSyntaxException {
         matchOptionalWS();
         if (currentToken == ';') {            
@@ -225,10 +297,11 @@ public class Lexer {
         else throw new VISTSyntaxException("Separator Syntax Error: ; expected");
 
         // Only match WS if this wasn't the last content
-        if (index + 1 < text.length()) matchWS();
+        if (hasNext()) matchWS();
     }
 
-    private void matchIdentifier() throws VISTSyntaxException {
+    // Identifier := *( non-WS-Character )
+    private void matchIdentifier() throws VISTSyntaxException, VISTSemanticException {
         if (isWS(currentToken)) throw new VISTSyntaxException("Identifier Syntax Error: Illegal WS");
 
         // Collects the identifier
@@ -240,19 +313,23 @@ public class Lexer {
             next();
         }
 
+        // Reserves the identifier and throws an error if non-unique
         currentName = identifier.toString();
+        boolean identifierAlreadyExists = collector.reserveIdentifier(currentName);
+        if (identifierAlreadyExists) throw new VISTSemanticException(" variable identifier '" + currentName + "' already exists");
     }
 
+    // Handles *( WS )
     private void matchOptionalWS() throws VISTSyntaxException {
         while (isWS(currentToken)) {
             next();
         }
     }
 
+    // Advances to the next non-WS token
     private void matchWS() throws VISTSyntaxException {
-        if (!isWS(currentToken)) throw new VISTSyntaxException("WS Syntax Error: Illegal character, WS expected");
+        if (!isWS(currentToken)) throw new VISTSyntaxException("WS Syntax Error: Illegal character, WS expected. Found: " + currentToken);
 
-        // Advance to the next non-WS token
         while (isWS(currentToken)) {
             next();
         }
@@ -263,14 +340,19 @@ public class Lexer {
         return token == ' ' || token == '\t' || token == '\n' || token == '\r' || Character.isWhitespace(token);
     }
 
-    // Management
+    /// STATE MANAGEMENT
 
-    private void next() throws VISTSyntaxException {
+    // Increments the token, if possible
+    private void next() {
         //if (index + 1 >= text.length()) throw new VISTSyntaxException("Syntax Error: End of VIST file reached without resolve");
-        if (index + 1 < text.length()) {
-            // Increments the token
+        if (hasNext()) {
             index++;
             currentToken = text.charAt(index);
         }
+    }
+
+    // Checks if the token can be incremented or if hit document end
+    private boolean hasNext() {
+        return index + 1 < text.length();
     }
 }
