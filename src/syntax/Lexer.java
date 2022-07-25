@@ -51,6 +51,7 @@ public class Lexer {
 
         // Collect all VIST objects
         collector.collect(baseObject);
+        baseObject.print();
     }
 
     // VariableBlockSequence := *( VariableBlock )
@@ -123,11 +124,10 @@ public class Lexer {
         if (currentToken != ')') throw new VISTSyntaxException("Object Type Body Syntax Error: Illegal Character, ')' expected. Found: " + currentToken);
         else next();
 
+        // The object was closed, so the depth is decreased
+        objectDepth--;
 
         matchSeparator();
-        
-        objectDepth--;        
-        baseObject.print();
     }
 
     // Matches either literals, a char, a colour, or any JSON value
@@ -206,10 +206,12 @@ public class Lexer {
 
             // Check first three HEX colour values
             for (int i = 0; i < 3; i++) {
-                if (Character.isLetterOrDigit(currentToken)) {
+                if (Character.isDigit(currentToken) || 
+                    Character.toLowerCase(currentToken) == 'a' || Character.toLowerCase(currentToken) == 'b' || Character.toLowerCase(currentToken) == 'c' || 
+                    Character.toLowerCase(currentToken) == 'd' || Character.toLowerCase(currentToken) == 'e' || Character.toLowerCase(currentToken) == 'f') {
                     bobTheBuilder.append(currentToken);
                     next();
-                } else throw new VISTSyntaxException("Colour Value Syntax Error: Letter or Digit expected");
+                } else throw new VISTSyntaxException("Colour Value Syntax Error: Letter or Digit (a-f / A-F) expected. Found: " + currentToken);
             }
 
             // Check if already matched
@@ -293,19 +295,17 @@ public class Lexer {
     // Separator := ( WS ) ";" ( WS )
     private void matchSeparator() throws VISTSyntaxException {
         matchOptionalWS();
-        if (currentToken == ';') {        
-            if (objectDepth == 0) {
-                // Collects the result
-                System.out.println("Successfully created the variable: " + currentName + ", (" + currentType + ") with the value: " + currentValue);
-                collector.collect(currentName, currentValue, currentType);
-            }
-            else {
 
+        if (currentToken == ';') {        
+            if (objectDepth != 0 && currentValue != null) {
+                // Adds the simple type to the object  
+                baseObject.addSimpleType(currentName, currentType, currentValue);
             }
+
             // Resets the variable variables
-            currentName = "";
+            currentName = null;
             currentType = null;
-            currentValue = "";
+            currentValue = null;
 
             // Advances
             next();
@@ -313,7 +313,8 @@ public class Lexer {
         else throw new VISTSyntaxException("Separator Syntax Error: ; expected");
 
         // Only match WS if this wasn't the last content
-        if (hasNext()) matchWS();
+        //if (hasNext()) matchWS();
+        matchOptionalWS();
     }
 
     // Identifier := *( non-WS-Character )

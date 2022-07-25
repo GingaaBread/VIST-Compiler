@@ -16,11 +16,12 @@ import syntax.VISTSyntaxException;
  */
 public class Collector {
     /// LISTS TO KEEP TRACK OF VARIABLE TYPES    
-    private List<VariableNameValuePair<String>> stringVariables;
-    private List<VariableNameValuePair<Character>> charVariables;
-    private List<VariableNameValuePair<Integer>> intVariables;
-    private List<VariableNameValuePair<Float>> floatVariables;
-    private List<VariableNameValuePair<Boolean>> booleanVariables;
+    /*
+    private List<VariableNameValueType<String>> stringVariables;
+    private List<VariableNameValueType<Character>> charVariables;
+    private List<VariableNameValueType<Integer>> intVariables;
+    private List<VariableNameValueType<Float>> floatVariables;
+    private List<VariableNameValueType<Boolean>> booleanVariables;*/
     //private List<ColorType> colourVariables;
 
     // Keeps track of identifiers to prevent non-unique variable names
@@ -31,11 +32,11 @@ public class Collector {
 
     // Initialises all lists
     public Collector() {
-        stringVariables = new LinkedList<>();
+        /*stringVariables = new LinkedList<>();
         charVariables = new LinkedList<>();
         intVariables = new LinkedList<>();
         floatVariables = new LinkedList<>();
-        booleanVariables = new LinkedList<>();
+        booleanVariables = new LinkedList<>();*/
 
         identifiers = new LinkedList<>();
         //colourVariables = new LinkedList<>();
@@ -60,34 +61,34 @@ public class Collector {
      * @see SimpleType
      * 
      * Turns the arguments into VariableNameValuePairs and adds it to the correct list
-     */
+     *//*
     public void collect(String variableName, String variableContent, SimpleType type) {
         switch (type) {
             case BOOLEAN:
-                booleanVariables.add(new VariableNameValuePair<Boolean>(variableName, Boolean.parseBoolean(variableContent)));
+                booleanVariables.add(new VariableNameValueType<Boolean>(variableName, Boolean.parseBoolean(variableContent)));
                 break;
             case CHAR:
-                charVariables.add(new VariableNameValuePair<Character>(variableName, variableContent.charAt(1)));
+                charVariables.add(new VariableNameValueType<Character>(variableName, variableContent.charAt(1)));
                 break;
             case COLOUR:
                 //booleanVariables.add(new VariableNameValuePair<Boolean>(variableName, Boolean.parseBoolean(variableContent)));
                 break;
             case FLOAT:
-                floatVariables.add(new VariableNameValuePair<Float>(variableName, Float.parseFloat(variableContent)));
+                floatVariables.add(new VariableNameValueType<Float>(variableName, Float.parseFloat(variableContent)));
                 break;
             case INT:
-                intVariables.add(new VariableNameValuePair<Integer>(variableName, Integer.parseInt(variableContent)));
+                intVariables.add(new VariableNameValueType<Integer>(variableName, Integer.parseInt(variableContent)));
                 break;
             case NULL:
                 //booleanVariables.add(new VariableNameValuePair<Float>(variableName, Float.parseFloat(variableContent)));
                 break;
             case STRING:
-                stringVariables.add(new VariableNameValuePair<String>(variableName, variableContent.substring(1, variableContent.length() - 1)));
+                stringVariables.add(new VariableNameValueType<String>(variableName, variableContent.substring(1, variableContent.length() - 1)));
                 break;
             default: 
                 throw new IllegalStateException("SimpleType '" + type + "' exists, but is not implemented.");
         }
-    }
+    }*/
 
     /**
      * 
@@ -128,6 +129,7 @@ public class Collector {
         throw new VISTSyntaxException("Invalid VIST Variable Name: " + variableName + " was not found in /" + current.getIdentifier());
     }
 
+    /*
     public boolean retrieveBoolean(String variableName) {
         for (var variableNameValuePair : booleanVariables)
             if (variableNameValuePair.getVariableName().equals(variableName)) return variableNameValuePair.getVariableValue();
@@ -185,9 +187,10 @@ public class Collector {
         throw new VISTVariableNotFoundException(variableName);
     }*/
 
+    /* */
     /**
      *  Returns a string listing all variables 
-     */
+     *//*
     @Override
     public String toString() {
         StringBuilder bobTheBuilder = new StringBuilder("Variables:\n");
@@ -200,7 +203,7 @@ public class Collector {
         }/*
         for (var colours : colours) {
             bobTheBuilder.append("\t" + colours.toString() + "\n");
-        }*/
+        }*//*
         for (var floats : floatVariables) {
             bobTheBuilder.append("\t" + floats.toString() + "\n");
         }
@@ -210,11 +213,11 @@ public class Collector {
         /* 
         for (var nulls : null) {
             bobTheBuilder.append("\t" + bools.toString() + "\n");
-        }*/
+        }*//*
         for (var strings : stringVariables) {
             bobTheBuilder.append("\t" + strings.toString() + "\n");
         }
 
         return bobTheBuilder.toString();
-    }
+    }*/
 }

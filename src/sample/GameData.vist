@@ -1,6 +1,7 @@
 a HAS (
-    test IS 5;
+    i IS 1;
+    ii IS 2;
+    iii IS 3;
+    iv IS "Hello World!";
+    v IS #25f226;
 );
-b HAS ();
-c HAS();
-i IS 5;

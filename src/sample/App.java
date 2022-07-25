@@ -28,7 +28,7 @@ public class App {
         // Create the VIST Document
         var gameData = new VIST(fileContent.toString());
 
-        System.out.println(gameData.retrieveFrom("a", "test"));
+        //System.out.println(gameData.retrieveFrom("a", "test"));
         /*
         // Example Usage:
         System.out.println(gameData.retrieveString("playerName"));

@@ -34,7 +34,7 @@ public class VIST {
      * @return The String variable value 
      * @throws VISTVariableNotFoundException
      */
-    public String retrieveString(final String variableName) { return collector.retrieveString(variableName); }
+    //public String retrieveString(final String variableName) { return collector.retrieveString(variableName); }
 
     /**
      * 
@@ -42,7 +42,7 @@ public class VIST {
      * @return The char variable value 
      * @throws VISTVariableNotFoundException
      */
-    public char retrieveChar(final String variableName) { return collector.retrieveChar(variableName); }
+    //public char retrieveChar(final String variableName) { return collector.retrieveChar(variableName); }
     
     /**
      * 
@@ -50,7 +50,7 @@ public class VIST {
      * @return The boolean variable value 
      * @throws VISTVariableNotFoundException
      */
-    public boolean retrieveBoolean(final String variableName) { return collector.retrieveBoolean(variableName); }
+    //public boolean retrieveBoolean(final String variableName) { return collector.retrieveBoolean(variableName); }
 
     /**
      * 
@@ -58,7 +58,7 @@ public class VIST {
      * @return The float variable value 
      * @throws VISTVariableNotFoundException
      */
-    public float retrieveFloat(final String variableName) { return collector.retrieveFloat(variableName); }
+    //public float retrieveFloat(final String variableName) { return collector.retrieveFloat(variableName); }
 
     /**
      * 
@@ -66,6 +66,6 @@ public class VIST {
      * @return The int variable value 
      * @throws VISTVariableNotFoundException
      */
-    public int retrieveInt(final String variableName) { return collector.retrieveInt(variableName); }
+    //public int retrieveInt(final String variableName) { return collector.retrieveInt(variableName); }
 
 }
