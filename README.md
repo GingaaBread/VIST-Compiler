@@ -13,14 +13,26 @@ VIST knows the following value types:
 - colour: 3 or 6 bit hexadecimal starting with #
 ### 2. Variable Blocks
 Variable Blocks define variables, and use the following format:
-VariableBlock := Identifier "IS" Value ";"
+VariableBlock := SimpleVariable | Object
+#### I. Simple Variables
+SimpleVariable := Identifier "IS" Value ";"
 Like all keywords, "IS" is case-insensitive.
 1. Example:
-highscore IS 25925;
+```highscore IS 25925;```
 2. Example:
-bossWasDefeated IS false;
+```bossWasDefeated IS false;```
 3. Example:
-worldToLoad IS "Overworld-1-5";
+```worldToLoad IS "Overworld-1-5";```
+#### II. Objects
+Object := Identifier "HAS" "(" *( VariableBlock ) ")" ";"
+VIST Objects are variables that contain any amount of variable blocks
+1. Example:
+```
+player HAS (
+    hp IS 25;
+    maxHP IS 50;
+);
+``` 
 
 ## Java Compiler
 To use the compiler, import the VIST class from 'generation.VIST', and pass the VIST document as a String.
@@ -32,7 +44,7 @@ public static void main(String[] args) throws Exception {
     final String test = "highscore IS 25929;";
 
     VIST vist = new VIST(test);
-    int score = vist.retrieveInt("highscore");
+    int score = vist.retrieveFrom("/", "highscore");
     
     if (score > 2500) {
         // ...

@@ -99,11 +99,11 @@ public class VISTObject {
      *  Used for debugging purposes.
      *  Prints the entire tree structure
      */
-    public void print() {
+    public void print(String prefix) {
         System.out.println("Variable: '" + identifier + "' (VIST OBJECT)");
 
         if (isEmpty()) {
-            System.out.println("\t--");
+            System.out.println("\t-- EMPTY --");
             return;
         }     
 
@@ -114,7 +114,7 @@ public class VISTObject {
             var iterator = objectTypeChildren.entrySet().iterator();
             while (iterator.hasNext()) {
                 System.out.print("\t\t"); 
-                iterator.next().getValue().print();
+                iterator.next().getValue().print("\t");
             }
         }
 
@@ -125,7 +125,7 @@ public class VISTObject {
             var iterator = simpleTypeChildren.entrySet().iterator();
             while (iterator.hasNext()) {
                 var item = iterator.next();
-                System.out.print("\t\tVariable: '" + item.getKey() + "', Value: " + item.getValue().getVariableValue() + " (" + item.getValue().gSimpleType() + ")\n");
+                System.out.print("\t\tVariable: '" + item.getKey() + "', Value: " + item.getValue().getVariableValue() + " (" + item.getValue().getSimpleType() + ")\n");
             }
         }
     }

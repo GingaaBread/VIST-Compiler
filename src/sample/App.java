@@ -20,19 +20,16 @@ public class App {
         StringBuilder fileContent = new StringBuilder();
         while (true) {
             int character = fileReader.read();
-            if (character == - 1) break;
+            if (character == -1) break;
 
             fileContent.append((char) character);
         }
         
         // Create the VIST Document
-        var gameData = new VIST(fileContent.toString());
+        var gameData = new VIST(fileContent.toString(), true);
+
+        System.out.println((float) gameData.retrieveFrom("/", "ii"));
 
         // TODO: Right order 
-        //System.out.println(gameData.retrieveFrom("a", "test"));
-        /*
-        // Example Usage:
-        System.out.println(gameData.retrieveString("playerName"));
-        System.out.println(gameData.retrieveInt("highscore"));*/
     }
 }

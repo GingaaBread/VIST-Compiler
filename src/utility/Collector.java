@@ -16,80 +16,8 @@ import syntax.VISTSyntaxException;
  *  Collects and manages all compiled variables
  */
 public class Collector {
-    /// LISTS TO KEEP TRACK OF VARIABLE TYPES    
-    /*
-    private List<VariableNameValueType<String>> stringVariables;
-    private List<VariableNameValueType<Character>> charVariables;
-    private List<VariableNameValueType<Integer>> intVariables;
-    private List<VariableNameValueType<Float>> floatVariables;
-    private List<VariableNameValueType<Boolean>> booleanVariables;*/
-    //private List<ColorType> colourVariables;
-
-    // Keeps track of identifiers to prevent non-unique variable names
-    private List<String> identifiers;
-
     // Keeps track of all VIST objects
     private VISTObject baseObject;
-
-    // Initialises all lists
-    public Collector() {
-        /*stringVariables = new LinkedList<>();
-        charVariables = new LinkedList<>();
-        intVariables = new LinkedList<>();
-        floatVariables = new LinkedList<>();
-        booleanVariables = new LinkedList<>();*/
-
-        identifiers = new LinkedList<>();
-        //colourVariables = new LinkedList<>();
-    }
-
-    /**
-     * 
-     * @param identifier The variable name identifier
-     * @return true if the identifier already existed, false if it was reserved
-     */
-    public boolean reserveIdentifier(String identifier) {
-        if (identifiers.contains(identifier)) return true;
-
-        identifiers.add(identifier);
-        return false;
-    }
-
-    /**
-     * @param variableName The unique name of the variable
-     * @param variableContent The actual String representation of the variable value
-     * @param type The simple data type of the variable
-     * @see SimpleType
-     * 
-     * Turns the arguments into VariableNameValuePairs and adds it to the correct list
-     *//*
-    public void collect(String variableName, String variableContent, SimpleType type) {
-        switch (type) {
-            case BOOLEAN:
-                booleanVariables.add(new VariableNameValueType<Boolean>(variableName, Boolean.parseBoolean(variableContent)));
-                break;
-            case CHAR:
-                charVariables.add(new VariableNameValueType<Character>(variableName, variableContent.charAt(1)));
-                break;
-            case COLOUR:
-                //booleanVariables.add(new VariableNameValuePair<Boolean>(variableName, Boolean.parseBoolean(variableContent)));
-                break;
-            case FLOAT:
-                floatVariables.add(new VariableNameValueType<Float>(variableName, Float.parseFloat(variableContent)));
-                break;
-            case INT:
-                intVariables.add(new VariableNameValueType<Integer>(variableName, Integer.parseInt(variableContent)));
-                break;
-            case NULL:
-                //booleanVariables.add(new VariableNameValuePair<Float>(variableName, Float.parseFloat(variableContent)));
-                break;
-            case STRING:
-                stringVariables.add(new VariableNameValueType<String>(variableName, variableContent.substring(1, variableContent.length() - 1)));
-                break;
-            default: 
-                throw new IllegalStateException("SimpleType '" + type + "' exists, but is not implemented.");
-        }
-    }*/
 
     /**
      * 
@@ -108,120 +36,35 @@ public class Collector {
      * @param variableName
      * @return
      */
-    public String retrieveFrom(String objectPath, String variableName) {
+    public VariableValueTypePair retrieveFrom(String objectPath, String variableName) {
         return retrieveFrom(objectPath, variableName, baseObject);
     }
 
-    private String retrieveFrom(String objectPath, String variableName, VISTObject current) {
-        // /Settings/doThis
-        if (objectPath.contains("/")) {
+    private VariableValueTypePair retrieveFrom(String objectPath, String variableName, VISTObject current) {
+        if (objectPath.equals("") || objectPath.equals("/")) {
+            var variable = current.getSimpleTypeChild(variableName);
+        
+            if (variable == null) throw new NoSuchElementException("VIST Retrieve Error: Variable '" + variableName + "' does not exist in object '" + current.getIdentifier() + "'");
+                
+            return variable;
+        }
+        else if (objectPath.contains("/")) {
             var newPath = new StringBuilder();
             String[] folders = objectPath.split("/");
 
-            for (int i = 1; i < folders.length; i++) {
+            for (int i = 2; i < folders.length; i++) {
                 newPath.append("/" + folders[i]);
             }
 
             objectPath = newPath.toString();
+            
+            var newObj = current.getObjectTypeChild(folders[1]);
 
-            return retrieveFrom(objectPath, variableName, current.getObjectTypeChild(folders[0]));
-        }
-        
-        var result = current.getSimpleTypeChild(variableName);
-        
-        if (result == null) throw new NoSuchElementException("VIST Retrieve Error: Variable '" + variableName + "' does not exist in object '" + objectPath + "'");
-        return result.getVariableValue();
-    }
+            if (newObj == null) throw new IllegalStateException(folders[1] + " does not exist in " + current.getIdentifier());
 
-    /*
-    public boolean retrieveBoolean(String variableName) {
-        for (var variableNameValuePair : booleanVariables)
-            if (variableNameValuePair.getVariableName().equals(variableName)) return variableNameValuePair.getVariableValue();
-
-        throw new VISTVariableNotFoundException("boolean", variableName);
-    }
-
-    public char retrieveChar(String variableName) {
-        for (var variableNameValuePair : charVariables)
-            if (variableNameValuePair.getVariableName().equals(variableName)) return variableNameValuePair.getVariableValue();
-
-        throw new VISTVariableNotFoundException("char", variableName);
-    }
-
-    public float retrieveFloat(String variableName) {
-        for (var variableNameValuePair : floatVariables)
-            if (variableNameValuePair.getVariableName().equals(variableName)) return variableNameValuePair.getVariableValue();
-
-        throw new VISTVariableNotFoundException("float", variableName);
-    }
-
-    public int retrieveInt(String variableName) {
-        for (var variableNameValuePair : intVariables)
-            if (variableNameValuePair.getVariableName().equals(variableName)) return variableNameValuePair.getVariableValue();
-
-        throw new VISTVariableNotFoundException("int", variableName);
-    }
-
-    public String retrieveString(String variableName) {
-        for (var variableNameValuePair : stringVariables)
-            if (variableNameValuePair.getVariableName().equals(variableName)) return variableNameValuePair.getVariableValue();
-
-        throw new VISTVariableNotFoundException("String", variableName);
-    }
-    
-    /*
-    public boolean retrieve(String variableName) {
-        for (var variableNameValuePair : booleanVariables)
-            if (variableNameValuePair.getVariableName().equals(variableName)) return variableNameValuePair.getVariableValue();
-
-        throw new VISTVariableNotFoundException(variableName);
-    }
-
-    public boolean retrieve(String variableName) {
-        for (var variableNameValuePair : booleanVariables)
-            if (variableNameValuePair.getVariableName().equals(variableName)) return variableNameValuePair.getVariableValue();
-
-        throw new VISTVariableNotFoundException(variableName);
-    }
-
-    public boolean retrieve(String variableName) {
-        for (var variableNameValuePair : booleanVariables)
-            if (variableNameValuePair.getVariableName().equals(variableName)) return variableNameValuePair.getVariableValue();
-
-        throw new VISTVariableNotFoundException(variableName);
-    }*/
-
-    /* */
-    /**
-     *  Returns a string listing all variables 
-     *//*
-    @Override
-    public String toString() {
-        StringBuilder bobTheBuilder = new StringBuilder("Variables:\n");
-        
-        for (var bools : booleanVariables) {
-            bobTheBuilder.append("\t" + bools.toString() + "\n");
-        }
-        for (var chars : charVariables) {
-            bobTheBuilder.append("\t" + chars.toString() + "\n");
-        }/*
-        for (var colours : colours) {
-            bobTheBuilder.append("\t" + colours.toString() + "\n");
-        }*//*
-        for (var floats : floatVariables) {
-            bobTheBuilder.append("\t" + floats.toString() + "\n");
-        }
-        for (var ints : intVariables) {
-            bobTheBuilder.append("\t" + ints.toString() + "\n");
-        }
-        /* 
-        for (var nulls : null) {
-            bobTheBuilder.append("\t" + bools.toString() + "\n");
-        }*//*
-        for (var strings : stringVariables) {
-            bobTheBuilder.append("\t" + strings.toString() + "\n");
+            return retrieveFrom(objectPath, variableName, current.getObjectTypeChild(folders[1]));
         }
 
-        return bobTheBuilder.toString();
-    }*/
+        throw new VISTSemanticException("Illegal Object Path. Path Grammar: '*(Obj)/Var' expected");
+    }
 }
