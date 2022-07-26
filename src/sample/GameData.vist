@@ -1,13 +1,16 @@
-a HAS (
-        i IS .52;
-        ii IS .2;
-        iii IS 3;
-        iv IS "Hello World!";
-        v IS #25f226;
-        b HAS (
-                hello IS 5;
-                x HAS (
-                        vni IS 5;
-                );
+i IS .52;
+ii IS .2;
+iii IS 3;
+iv IS "Hello World!";
+v IS #25f226;
+b HAS (
+        hello IS 5;
+);
+c HAS (
+        z HAS (
+
         );
+);
+d HAS (
+
 );

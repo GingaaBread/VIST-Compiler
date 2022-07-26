@@ -11,7 +11,7 @@ public class App {
     /**
      * @param args
      * @throws Exception
-     */
+      */
     public static void main(String[] args) throws Exception {
         // Create the FileReader
         FileReader fileReader = new FileReader(new File(".\\src\\sample\\GameData.vist").getAbsolutePath());
@@ -27,9 +27,5 @@ public class App {
         
         // Create the VIST Document
         var gameData = new VIST(fileContent.toString(), true);
-
-        System.out.println((float) gameData.retrieveFrom("/", "ii"));
-
-        // TODO: Right order 
     }
 }

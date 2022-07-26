@@ -38,8 +38,10 @@ public class VISTObject {
             // Check if there is no (more) object child, but still a level
             if (objectTypeChildren.isEmpty()) throw new VISTSyntaxException("VISTObject '" + identifier + "' has no more object children, but level is not 0: level=" + level);
             
+            var nav = navigation.get(level - 1);
+
             // Else, there is no problem and the simple type can be added to a lower level recursively
-            objectTypeChildren.get(navigation.get(level)).addSimpleType(simpleTypeIdentifier, simpleType, variableValue, navigation, level - 1);
+            objectTypeChildren.get(nav).addSimpleType(simpleTypeIdentifier, simpleType, variableValue, navigation, level - 1);
         }
     }
 
@@ -103,29 +105,29 @@ public class VISTObject {
         System.out.println("Variable: '" + identifier + "' (VIST OBJECT)");
 
         if (isEmpty()) {
-            System.out.println("\t-- EMPTY --");
+            System.out.println(prefix + "\t\t-- EMPTY --");
             return;
         }     
 
-        System.out.println("\t-VIST Objects:");
+        System.out.println(prefix + "\t-VIST Objects:");
         if (objectTypeChildren.isEmpty()) {
-            System.out.println("\t\t--");
+            System.out.println(prefix + "\t\t--");
         } else {
             var iterator = objectTypeChildren.entrySet().iterator();
             while (iterator.hasNext()) {
-                System.out.print("\t\t"); 
+                System.out.print(prefix + "\t\t"); 
                 iterator.next().getValue().print("\t");
             }
         }
 
-        System.out.println("\t-Simple Types:");
+        System.out.println(prefix + "\t-Simple Types:");
         if (simpleTypeChildren.isEmpty()) {
-            System.out.println("\t\t--");
+            System.out.println(prefix + "\t\t--");
         } else {
             var iterator = simpleTypeChildren.entrySet().iterator();
             while (iterator.hasNext()) {
                 var item = iterator.next();
-                System.out.print("\t\tVariable: '" + item.getKey() + "', Value: " + item.getValue().getVariableValue() + " (" + item.getValue().getSimpleType() + ")\n");
+                System.out.println(prefix + "\t\tVariable: '" + item.getKey() + "', Value: " + item.getValue().getVariableValue() + " (" + item.getValue().getSimpleType() + ")");
             }
         }
     }

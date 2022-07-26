@@ -22,10 +22,10 @@ public class Lexer {
     /// SCANNING VARIABLES
     private String text;
     private char currentToken;
-    private int index;
+    private int index, line, linePosition;
 
     /// VARIABLE COLLECTION VARIABLES
-    private String currentValue, currentName;
+    private String currentValue, currentIdentifier;
     private SimpleType currentType;
     private VISTObject baseObject;
     private List<String> objectHierarchy;
@@ -47,17 +47,23 @@ public class Lexer {
      * Parses the entire text, providing results to the Collector class
      */
     public void match(String text, boolean printDebugLogs) throws VISTSyntaxException {
-        // Setup scanning variables
-        this.text = text;
-        currentToken = text.charAt(index);
-        
-        // Initiate parsing
-        matchVariableBlockSequence();
+        try {
+            // Setup scanning variables
+            this.text = text;
+            currentToken = text.charAt(index);
+            
+            // Initiate parsing
+            matchVariableBlockSequence();
 
-        // Collect all VIST objects
-        collector.collect(baseObject);
+            // Collect all VIST objects
+            collector.collect(baseObject);
 
-        if (printDebugLogs) baseObject.print("");
+            if (printDebugLogs) baseObject.print("");
+        }
+        catch (Exception e) {
+            System.err.println("VIST Compile Error (halted at l." + line + "[" + (linePosition - 1) + "])");
+            throw e;
+        }
     }
 
     // VariableBlockSequence := *( VariableBlock )
@@ -124,9 +130,9 @@ public class Lexer {
         else next();
 
         // Registers the object
-        objectHierarchy.add(0, currentName);
+        objectHierarchy.add(0, currentIdentifier);
 
-        baseObject.addObject(currentName, new VISTObject(currentName), objectHierarchy, objectHierarchy.size() - 1);
+        baseObject.addObject(currentIdentifier, new VISTObject(currentIdentifier), objectHierarchy, objectHierarchy.size() - 1);
 
         matchOptionalWS();
 
@@ -309,12 +315,12 @@ public class Lexer {
 
         if (currentToken == ';') {        
             if (currentValue != null) {
-                // Adds the simple type to the object  
-                baseObject.addSimpleType(currentName, currentType, currentValue, objectHierarchy, objectHierarchy.size() - 1);
+                // Adds the simple type to the object
+                baseObject.addSimpleType(currentIdentifier, currentType, currentValue, objectHierarchy, objectHierarchy.size());
             }
 
             // Resets the variable variables
-            currentName = null;
+            currentIdentifier = null;
             currentType = null;
             currentValue = null;
 
@@ -328,20 +334,21 @@ public class Lexer {
         matchOptionalWS();
     }
 
-    // Identifier := *( non-WS-Character )
+    // Identifier := *( NonWSNorSlashCharacter )
     private void matchIdentifier() throws VISTSyntaxException, VISTSemanticException {
         if (isWS(currentToken)) throw new VISTSyntaxException("Identifier Syntax Error: Illegal WS");
 
         // Collects the identifier
         StringBuilder identifier = new StringBuilder();
 
-        // An identifier is any non-WS sequence of characters
+        // An identifier is any non-WS sequence of characters without '/'
         while (!isWS(currentToken)) {
+            if (is('/')) throw new VISTSemanticException("Illegal Identifier. Token '/' is reserved. Identifier: " + identifier.toString() + "/ <---");
             identifier.append(currentToken);
             next();
         }
 
-        currentName = identifier.toString();
+        currentIdentifier = identifier.toString();
     }
 
     // Handles *( WS )
@@ -379,7 +386,15 @@ public class Lexer {
         //if (index + 1 >= text.length()) throw new VISTSyntaxException("Syntax Error: End of VIST file reached without resolve");
         if (hasNext()) {
             index++;
+            linePosition++;
             currentToken = text.charAt(index);
+
+            // Increment line if \n found
+            if (is('\n'))
+            {
+                line++;
+                linePosition = 0;
+            }
         }
     }
 
