@@ -1,50 +1,104 @@
 package syntax;
 
-import java.util.LinkedList;
+import java.util.HashMap;
 import java.util.List;
 
 import utility.SimpleType;
-import utility.VariableNameValueType;
+import utility.VISTSemanticException;
+import utility.VariableValueTypePair;
 
+/**
+ *  @author Gino Glink
+ *  @version 1.0
+ *  @since 1.0
+ * 
+ *  Describes a VIST object node that can contain further nodes and simple types as children
+ *  @see SimpleType
+ */
 public class VISTObject {
-    private String identifier;
-    private List<VariableNameValueType> simpleTypeChildren;
-    private List<VISTObject> objectTypeChildren;
+    private String identifier; // the object variable identifier used as a key
+    private HashMap<String, VariableValueTypePair> simpleTypeChildren; // the simple type children of the object stored as a HashMap
+    private HashMap<String, VISTObject> objectTypeChildren; // the object children of the object stored as a HashMap
 
     public VISTObject(final String identifier) {
         this.identifier = identifier;
-        simpleTypeChildren = new LinkedList<>();
-        objectTypeChildren = new LinkedList<>();
+        simpleTypeChildren = new HashMap<>();
+        objectTypeChildren = new HashMap<>();
     }
 
-    public void addSimpleType(String simpleTypeIdentifier, SimpleType simpleType, String variableValue) {
-        simpleTypeChildren.add(new VariableNameValueType(simpleTypeIdentifier, simpleType, variableValue));
-    }
-
-    public void addObject(VISTObject object, int level) {
-        if (level == 0) {
-            objectTypeChildren.add(object);
+    public void addSimpleType(String simpleTypeIdentifier, SimpleType simpleType, String variableValue, List<String> navigation, int level) {
+        // Check if variable name is not unique
+        if (simpleTypeChildren.containsKey(simpleTypeIdentifier))
+            throw new VISTSemanticException("variable identifier '" + simpleTypeIdentifier + "' already exists in object '" + identifier + "'"); 
+        
+        // Check if the parameter variable is to be added to this object    
+        if (level == 0) {   
+            simpleTypeChildren.put(simpleTypeIdentifier, new VariableValueTypePair(simpleType, variableValue));
+        } else {
+            // Check if there is no (more) object child, but still a level
+            if (objectTypeChildren.isEmpty()) throw new VISTSyntaxException("VISTObject '" + identifier + "' has no more object children, but level is not 0: level=" + level);
+            
+            // Else, there is no problem and the simple type can be added to a lower level recursively
+            objectTypeChildren.get(navigation.get(level)).addSimpleType(simpleTypeIdentifier, simpleType, variableValue, navigation, level - 1);
         }
-
-        addObject(object, level - 1);
     }
 
+    public void addObject(String objectIdentifier, VISTObject object, List<String> navigation, int level) {
+        // Check if variable name is not unique
+        if (objectTypeChildren.containsKey(objectIdentifier)) 
+            throw new VISTSyntaxException("variable identifier '" + objectIdentifier + "' already exists in object '" + identifier + "'"); 
+         
+        // Check if the parameter object is to be added to this object    
+        if (level == 0) {
+            objectTypeChildren.put(objectIdentifier, object);
+        }
+        else {
+            // Check if there is no (more) object child, but still a level
+            if (objectTypeChildren.isEmpty()) throw new VISTSyntaxException("VISTObject '" + identifier + "' has no more object children, but level is not 0: level=" + level);
+            
+            // Else, there is no problem and the object can be added to a lower level recursively
+            objectTypeChildren.get(navigation.get(level)).addObject(objectIdentifier, object, navigation, level - 1);
+        }
+    }
+
+    /**
+     * 
+     * @return true if the VISTObject has neither simple type children nor object type children - else false
+     */
     public boolean isEmpty() {
         return simpleTypeChildren.isEmpty() && objectTypeChildren.isEmpty();
     }
 
+    /**
+     * 
+     * @return The variable identifier of the VISTObject
+     */
     public String getIdentifier() {
         return identifier;
     }
 
-    public List<VariableNameValueType> getSimpleTypeChildren() {
-        return simpleTypeChildren;
+    /**
+     * 
+     * @param identifier The variable identifier of the simple type
+     * @return null if the variable does not exist in this object or the variable as a pair with its value and type both stored as strings
+     */
+    public VariableValueTypePair getSimpleTypeChild(String identifier) {
+        return simpleTypeChildren.get(identifier);
     }
 
-    public List<VISTObject> getObjectTypeChildren() {
-        return objectTypeChildren;
+    /**
+     * 
+     * @param identifier The variable identifier of the object
+     * @return null if the object does not exist in this object or the VISTObject if it does
+     */
+    public VISTObject getObjectTypeChild(String identifier) {
+        return objectTypeChildren.get(identifier);
     }
 
+    /**
+     *  Used for debugging purposes.
+     *  Prints the entire tree structure
+     */
     public void print() {
         System.out.println("Variable: '" + identifier + "' (VIST OBJECT)");
 
@@ -57,9 +111,10 @@ public class VISTObject {
         if (objectTypeChildren.isEmpty()) {
             System.out.println("\t\t--");
         } else {
-            for (VISTObject vistObject : objectTypeChildren) {
+            var iterator = objectTypeChildren.entrySet().iterator();
+            while (iterator.hasNext()) {
                 System.out.print("\t\t"); 
-                vistObject.print();
+                iterator.next().getValue().print();
             }
         }
 
@@ -67,8 +122,10 @@ public class VISTObject {
         if (simpleTypeChildren.isEmpty()) {
             System.out.println("\t\t--");
         } else {
-            for (var child : simpleTypeChildren) {
-                System.out.print("\t\tVariable: '" + child.getVariableName() + "', Value: " + child.getVariableValue() + " (" + child.gSimpleType() + ")\n");
+            var iterator = simpleTypeChildren.entrySet().iterator();
+            while (iterator.hasNext()) {
+                var item = iterator.next();
+                System.out.print("\t\tVariable: '" + item.getKey() + "', Value: " + item.getValue().getVariableValue() + " (" + item.getValue().gSimpleType() + ")\n");
             }
         }
     }

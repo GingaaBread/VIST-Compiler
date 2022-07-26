@@ -28,6 +28,7 @@ public class App {
         // Create the VIST Document
         var gameData = new VIST(fileContent.toString());
 
+        // TODO: Right order 
         //System.out.println(gameData.retrieveFrom("a", "test"));
         /*
         // Example Usage:

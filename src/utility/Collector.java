@@ -3,6 +3,7 @@ package utility;
 import java.util.Currency;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import syntax.VISTObject;
 import syntax.VISTSyntaxException;
@@ -103,30 +104,33 @@ public class Collector {
     // RETRIEVERS
 
     /**
-     * ! 0(n^2) 
      * @param objectPath The path to the variable in the following format: *( ObjectIdentifier "/")
      * @param variableName
      * @return
      */
-    public Object retrieveFrom(String objectPath, String variableName) {
-        String[] paths = objectPath.split("/");
-        VISTObject current = baseObject;
-        
-        for (String vistObjectName : paths) {
-            for (int i = 0; i < current.getObjectTypeChildren().size(); i++) {
-                System.out.println(current.getObjectTypeChildren().get(i).getIdentifier());
-                if (vistObjectName.equals(current.getObjectTypeChildren().get(i).getIdentifier())) {
-                    current = current.getObjectTypeChildren().get(i);
-                }
+    public String retrieveFrom(String objectPath, String variableName) {
+        return retrieveFrom(objectPath, variableName, baseObject);
+    }
+
+    private String retrieveFrom(String objectPath, String variableName, VISTObject current) {
+        // /Settings/doThis
+        if (objectPath.contains("/")) {
+            var newPath = new StringBuilder();
+            String[] folders = objectPath.split("/");
+
+            for (int i = 1; i < folders.length; i++) {
+                newPath.append("/" + folders[i]);
             }
+
+            objectPath = newPath.toString();
+
+            return retrieveFrom(objectPath, variableName, current.getObjectTypeChild(folders[0]));
         }
-
-        for (int i = 0; i < current.getSimpleTypeChildren().size(); i++) {
-            if (variableName.equals(current.getIdentifier()))
-                return current.getSimpleTypeChildren().get(i);
-        } 
-
-        throw new VISTSyntaxException("Invalid VIST Variable Name: " + variableName + " was not found in /" + current.getIdentifier());
+        
+        var result = current.getSimpleTypeChild(variableName);
+        
+        if (result == null) throw new NoSuchElementException("VIST Retrieve Error: Variable '" + variableName + "' does not exist in object '" + objectPath + "'");
+        return result.getVariableValue();
     }
 
     /*

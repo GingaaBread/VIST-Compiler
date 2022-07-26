@@ -5,23 +5,17 @@ package utility;
  *  @version 1.0
  *  @since 1.0
  * 
- *  Defines a 3-Tuple containing a simple variable type, a variable identifier, and a variable value as a string.
+ *  Defines a 2-Tuple containing a simple variable type, a variable identifier, and a variable value as a string.
  *  The value needs to be converted into its respective type
  *  @see SimpleType
  */
-public class VariableNameValueType {
-    private String variableName;
+public class VariableValueTypePair {
     private SimpleType simpleType;
     private String variableValue;
     
-    public VariableNameValueType(final String variableName, final SimpleType simpleType, final String variableValue) {
-        this.variableName = variableName;
+    public VariableValueTypePair(final SimpleType simpleType, final String variableValue) {
         this.simpleType = simpleType;
         this.variableValue = variableValue;
-    }
-
-    public String getVariableName() {
-        return variableName;
     }
 
     public String getVariableValue() {

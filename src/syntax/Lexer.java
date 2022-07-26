@@ -1,5 +1,8 @@
 package syntax;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import utility.Collector;
 import utility.SimpleType;
 import utility.VISTSemanticException;
@@ -25,13 +28,15 @@ public class Lexer {
     private String currentValue, currentName;
     private SimpleType currentType;
     private VISTObject baseObject;
-    private int objectDepth;
+    private List<String> objectHierarchy;
     
     // Used for collecting successfully parsed variables
     private final Collector collector;
 
     public Lexer(Collector collector) {
         this.collector = collector;
+        this.objectHierarchy = new LinkedList<>();
+        this.baseObject = new VISTObject("/");
     }
 
     /**
@@ -108,12 +113,9 @@ public class Lexer {
         else next();
 
         // Registers the object
-        objectDepth++;
-        if (objectDepth == 1) {
-            baseObject = new VISTObject(currentName);
-        } else {
-            baseObject.addObject(new VISTObject(currentName), objectDepth);
-        }
+        objectHierarchy.add(0, currentName);
+
+        baseObject.addObject(currentName, new VISTObject(currentName), objectHierarchy, objectHierarchy.size() - 1);
 
         matchOptionalWS();
 
@@ -125,7 +127,7 @@ public class Lexer {
         else next();
 
         // The object was closed, so the depth is decreased
-        objectDepth--;
+        objectHierarchy.remove(0);
 
         matchSeparator();
     }
@@ -297,9 +299,9 @@ public class Lexer {
         matchOptionalWS();
 
         if (currentToken == ';') {        
-            if (objectDepth != 0 && currentValue != null) {
+            if (currentValue != null) {
                 // Adds the simple type to the object  
-                baseObject.addSimpleType(currentName, currentType, currentValue);
+                baseObject.addSimpleType(currentName, currentType, currentValue, objectHierarchy, objectHierarchy.size() - 1);
             }
 
             // Resets the variable variables
@@ -330,10 +332,7 @@ public class Lexer {
             next();
         }
 
-        // Reserves the identifier and throws an error if non-unique
         currentName = identifier.toString();
-        boolean identifierAlreadyExists = collector.reserveIdentifier(currentName);
-        if (identifierAlreadyExists) throw new VISTSemanticException(" variable identifier '" + currentName + "' already exists");
     }
 
     // Handles *( WS )
