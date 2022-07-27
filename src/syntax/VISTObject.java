@@ -17,15 +17,25 @@ import utility.VariableValueTypePair;
  */
 public class VISTObject {
     private String identifier; // the object variable identifier used as a key
+    private boolean excluded; // does the BASE keyword exclude this Object?
     private HashMap<String, VariableValueTypePair> simpleTypeChildren; // the simple type children of the object stored as a HashMap
     private HashMap<String, VISTObject> objectTypeChildren; // the object children of the object stored as a HashMap
 
-    public VISTObject(final String identifier) {
+    public VISTObject(final String identifier, boolean excluded) {
         this.identifier = identifier;
+        this.excluded = excluded;
         simpleTypeChildren = new HashMap<>();
         objectTypeChildren = new HashMap<>();
     }
 
+    /**
+     * Traverses to the correct VISTObject and adds the SimpleType
+     * @param simpleTypeIdentifier The variable identifier of the simple type to be inserted
+     * @param simpleType The simple type to be inserted
+     * @param variableValue The variable value of the simple type to be inserted
+     * @param navigation A navigation path list to correctly traverse to the right VISTObject 
+     * @param level Keeps track of recursion depth and adds the simple type when arrived at 0
+     */
     public void addSimpleType(String simpleTypeIdentifier, SimpleType simpleType, String variableValue, List<String> navigation, int level) {
         // Check if variable name is not unique
         if (simpleTypeChildren.containsKey(simpleTypeIdentifier))
@@ -38,6 +48,7 @@ public class VISTObject {
             // Check if there is no (more) object child, but still a level
             if (objectTypeChildren.isEmpty()) throw new VISTSyntaxException("VISTObject '" + identifier + "' has no more object children, but level is not 0: level=" + level);
             
+            // Retrieve the current navigation option from the list 
             var nav = navigation.get(level - 1);
 
             // Else, there is no problem and the simple type can be added to a lower level recursively
@@ -45,6 +56,13 @@ public class VISTObject {
         }
     }
 
+    /**
+     * Traverses to the correct VISTObject and adds a VISTObject
+     * @param objectIdentifier The variable identifier of the object to be inserted
+     * @param object The VISTObject to be inserted
+     * @param navigation A navigation path list to correctly traverse to the right VISTObject 
+     * @param level Keeps track of recursion depth and adds the simple type when arrived at 0
+     */
     public void addObject(String objectIdentifier, VISTObject object, List<String> navigation, int level) {
         // Check if variable name is not unique
         if (objectTypeChildren.containsKey(objectIdentifier)) 
@@ -69,6 +87,14 @@ public class VISTObject {
      */
     public boolean isEmpty() {
         return simpleTypeChildren.isEmpty() && objectTypeChildren.isEmpty();
+    }
+
+    /**
+     * 
+     * @return true if the VISTObject is marked as BASED - else false
+     */
+    public boolean isExcluded() {
+        return excluded;
     }
 
     /**
@@ -102,7 +128,7 @@ public class VISTObject {
      *  Prints the entire tree structure
      */
     public void print(String prefix) {
-        System.out.println("Variable: '" + identifier + "' (VIST OBJECT)");
+        System.out.println("Variable: '" + identifier + "' (VIST OBJECT)" + (excluded ? "[BASE]" : ""));
 
         if (isEmpty()) {
             System.out.println(prefix + "\t\t-- EMPTY --");

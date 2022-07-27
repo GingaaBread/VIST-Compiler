@@ -1,16 +1,15 @@
-i IS .52;
-ii IS .2;
-iii IS 3;
-iv IS "Hello World!";
-v IS #25f226;
-b HAS (
-        hello IS 5;
-);
-c HAS (
-        z HAS (
-
+gameSettings HAS (
+        audioSettings HAS (
+                isMuted IS false;
+                masterVolume IS 80.5;
+                musicVolume IS 76.2;
+                soundsVolume IS 52.7;
+        );
+        gameplaySettings HAS (
+                difficulty IS 'E';
         );
 );
-d HAS (
-
+gameSlot HAS (
+        currentLevel IS 5;
+        currentWorld IS "Overworld-5-1";
 );

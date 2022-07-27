@@ -3,7 +3,6 @@ package syntax;
 import java.util.LinkedList;
 import java.util.List;
 
-import utility.Collector;
 import utility.SimpleType;
 import utility.VISTSemanticException;
 
@@ -27,16 +26,14 @@ public class Lexer {
     /// VARIABLE COLLECTION VARIABLES
     private String currentValue, currentIdentifier;
     private SimpleType currentType;
+    private boolean baseObjectDetected;
     private VISTObject baseObject;
     private List<String> objectHierarchy;
     
-    // Used for collecting successfully parsed variables
-    private final Collector collector;
-
-    public Lexer(Collector collector) {
-        this.collector = collector;
+    // Initialises the empty structures
+    public Lexer() {
         this.objectHierarchy = new LinkedList<>();
-        this.baseObject = new VISTObject("/");
+        this.baseObject = new VISTObject("/", false);
     }
 
     /**
@@ -44,9 +41,9 @@ public class Lexer {
      * @param text: The VIST document text to be matched
      * @throws VISTSyntaxException
      * 
-     * Parses the entire text, providing results to the Collector class
+     * Parses the entire text, providing results to the VIST class
      */
-    public void match(String text, boolean printDebugLogs) throws VISTSyntaxException {
+    public VISTObject match(String text, boolean printDebugLogs) throws VISTSyntaxException {
         try {
             // Setup scanning variables
             this.text = text;
@@ -55,15 +52,14 @@ public class Lexer {
             // Initiate parsing
             matchVariableBlockSequence();
 
-            // Collect all VIST objects
-            collector.collect(baseObject);
-
             if (printDebugLogs) baseObject.print("");
         }
         catch (Exception e) {
-            System.err.println("VIST Compile Error (halted at l." + line + "[" + (linePosition - 1) + "])");
+            System.err.println("VIST Compile Error (halted at " + line + "[" + (linePosition - 1) + "])");
             throw e;
         }
+
+        return baseObject;
     }
 
     // VariableBlockSequence := *( VariableBlock )
@@ -73,13 +69,15 @@ public class Lexer {
         }
     }
 
-    // VariableBlock := Identifier WS [PrimitiveVariableBlockBody | ObjectVariableBlockBody]
+    // VariableBlock := BaseObject | [ Identifier WS [ PrimitiveVariableBlockBody | ObjectVariableBlockBody ] ]
     private void matchVariableBlock() throws VISTSyntaxException {
         matchIdentifier();
         matchWS();
 
         // Check if primitive
         if (is('i')) {
+            if (baseObjectDetected) throw new VISTSyntaxException("The BASE keyword can only be applied to objects.");
+
             matchPrimitiveVariableBlockBody();
         }
         // Check if object
@@ -132,7 +130,8 @@ public class Lexer {
         // Registers the object
         objectHierarchy.add(0, currentIdentifier);
 
-        baseObject.addObject(currentIdentifier, new VISTObject(currentIdentifier), objectHierarchy, objectHierarchy.size() - 1);
+        baseObject.addObject(currentIdentifier, new VISTObject(currentIdentifier, baseObjectDetected), objectHierarchy, objectHierarchy.size() - 1);
+        baseObjectDetected = false;
 
         matchOptionalWS();
 
@@ -348,6 +347,23 @@ public class Lexer {
             next();
         }
 
+        // Checks if the identifier is prefixed with the BASE keyword
+        if (identifier.toString().equalsIgnoreCase("base")) {
+            // BASE WS Identifier
+
+            baseObjectDetected = true;
+
+            matchWS();
+
+            identifier = new StringBuilder();
+            // An identifier is any non-WS sequence of characters without '/'
+            while (!isWS(currentToken)) {
+                if (is('/')) throw new VISTSemanticException("Illegal Identifier. Token '/' is reserved. Identifier: " + identifier.toString() + "/ <---");
+                identifier.append(currentToken);
+                next();
+            }
+        } 
+        
         currentIdentifier = identifier.toString();
     }
 
