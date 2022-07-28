@@ -17,3 +17,4 @@ BASE item HAS (
         name IS "Item";
         value IS 0;
 );
+excalibur USES item;

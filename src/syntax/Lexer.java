@@ -69,7 +69,7 @@ public class Lexer {
         }
     }
 
-    // VariableBlock := BaseObject | [ Identifier WS [ PrimitiveVariableBlockBody | ObjectVariableBlockBody ] ]
+    // VariableBlock := BaseObject | [ Identifier WS [ PrimitiveVariableBlockBody | ObjectVariableBlockBody | InheritedVariableBlockBody ] ]
     private void matchVariableBlock() throws VISTSyntaxException {
         matchIdentifier();
         matchWS();
@@ -83,6 +83,10 @@ public class Lexer {
         // Check if object
         else if (is('h')) {
             matchObjectVariableBlockBody();
+        }
+        // Check if inherited
+        else if (is('u')) {
+            matchInheritedVariableBlockBody();
         }
     }
 
@@ -101,7 +105,15 @@ public class Lexer {
         matchObjectTypeBody();
     }
 
-    // Matches the primitive type assignment keyword "IS" (tolowercase)
+    // InheritedVariableBlockBody := InheritanceAssignment WS FamiliarIdentifier Separator
+    private void matchInheritedVariableBlockBody() {
+        matchInheritanceAssignment();
+        matchWS();
+        matchFamiliarIdentifier();
+        matchSeparator();
+    }
+
+    // PrimitiveTypeAssignment := "IS" (tolowercase)
     private void matchPrimitiveTypeAssignment() throws VISTSyntaxException {
         if (!is('i')) throw new VISTSyntaxException("Primitive Type Assignment Syntax Error: Illegal Character, i/I expected. Found: " + currentToken);
         else next();
@@ -110,7 +122,22 @@ public class Lexer {
         else next();
     }
 
-    // Matches the object type assignment keyword "HAS" (tolowercase)
+    // InheritanceAssignment := "USES" (tolowercase)
+    private void matchInheritanceAssignment() throws VISTSyntaxException {
+        if (!is('u')) throw new VISTSyntaxException("Object Type Assignment Syntax Error: Illegal Character, u/U expected. Found: " + currentToken);
+        else next();
+
+        if (!is('s')) throw new VISTSyntaxException("Object Type Assignment Syntax Error: Illegal Character, s/S expected. Found: " + currentToken);
+        else next();
+
+        if (!is('e')) throw new VISTSyntaxException("Object Type Assignment Syntax Error: Illegal Character, e/E expected. Found: " + currentToken);
+        else next();
+
+        if (!is('s')) throw new VISTSyntaxException("Object Type Assignment Syntax Error: Illegal Character, s/S expected. Found: " + currentToken);
+        else next();
+    }
+
+    // ObjectTypeAssignment := "HAS" (tolowercase)
     private void matchObjectTypeAssignment() throws VISTSyntaxException {
         if (!is('h')) throw new VISTSyntaxException("Object Type Assignment Syntax Error: Illegal Character, h/H expected. Found: " + currentToken);
         else next();
@@ -365,6 +392,27 @@ public class Lexer {
             }
         } 
         
+        currentIdentifier = identifier.toString();
+    }
+
+    private void matchFamiliarIdentifier() throws VISTSemanticException, VISTSyntaxException {
+        if (isWS(currentToken)) throw new VISTSyntaxException("Identifier Syntax Error: Illegal WS");
+        
+        // Collects the identifier
+        StringBuilder identifier = new StringBuilder();
+
+        // An identifier is any non-WS sequence of characters without '/'
+        while (!isWS(currentToken) && !is(';')) {
+            if (is('/')) throw new VISTSemanticException("Illegal Identifier. Token '/' is reserved. Identifier: " + identifier.toString() + "/ <---");
+                        
+            identifier.append(currentToken);
+            next();
+        }
+
+        // Check if there is no identifier matching this variable 
+        if (!baseObject.containsBaseVISTObject(identifier.toString())) 
+            throw new VISTSemanticException("Trying to inherit from a non-existing variable. Variable identifier: '" + identifier.toString() + "'");
+
         currentIdentifier = identifier.toString();
     }
 

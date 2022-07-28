@@ -123,6 +123,24 @@ public class VISTObject {
         return objectTypeChildren.get(identifier);
     }
 
+    // TODO: FIX
+    public boolean containsBaseVISTObject(String identifier) {
+        System.out.println("At: " + identifier);
+        if (objectTypeChildren.isEmpty()) return false;
+        if (this.excluded && this.identifier.equals(identifier)) return true;
+
+        System.out.println("Contains children and is not the searched item");
+
+        var iterator = objectTypeChildren.entrySet().iterator();
+        while (iterator.hasNext()) {
+            boolean found = iterator.next().getValue().containsBaseVISTObject(identifier);
+            
+            if (found) return true;
+        }
+
+        return false;
+    }
+
     /**
      *  Used for debugging purposes.
      *  Prints the entire tree structure
