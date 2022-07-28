@@ -38,6 +38,8 @@ public class VIST {
         this(vistDocument, false);
     }
 
+    /// RETRIEVERS
+
     /**
      * Retrieves the variable from the specified path to the object
      * @param objectPath - the location path to the object that contains the variable. '/' points to the index object
@@ -45,9 +47,71 @@ public class VIST {
      * @return the primitive type of the variable as a Object 
      * @example Example Path: /ExampleData/Settings/displayLines
      */
-    public Object retrieveFrom(final String objectPath, String variableName) { 
+    public Object retrieveFrom(String objectPath, String variableName) { 
         return processSimpleType(retrieveVariableValueTypePairFrom(objectPath, variableName, baseObject)); 
     }
+
+    /**
+     * Retrieves the variable from the specified path to the object casted to an int
+     * @param objectPath - the location path to the object that contains the variable. '/' points to the index object
+     * @param variableName - the identifier of the variable
+     * @return the primitive type of the variable as an int 
+     * @example Example Path: /ExampleData/Settings/itemAmount
+     * @see retrieveFrom()
+     */
+    public int retrieveIntFrom(String objectPath, String variableName) {
+        return (int) retrieveFrom(objectPath, variableName);
+    }
+
+     /**
+     * Retrieves the variable from the specified path to the object casted to a float
+     * @param objectPath - the location path to the object that contains the variable. '/' points to the index object
+     * @param variableName - the identifier of the variable
+     * @return the primitive type of the variable as a float 
+     * @example Example Path: /ExampleData/Settings/masterVolume
+     * @see retrieveFrom()
+     */
+    public float retrieveFloatFrom(String objectPath, String variableName) {
+        return (float) retrieveFrom(objectPath, variableName);
+    }
+
+     /**
+     * Retrieves the variable from the specified path to the object casted to a char
+     * @param objectPath - the location path to the object that contains the variable. '/' points to the index object
+     * @param variableName - the identifier of the variable
+     * @return the primitive type of the variable as a char 
+     * @example Example Path: /ExampleData/Settings/grade
+     * @see retrieveFrom()
+     */
+    public char retrieveCharFrom(String objectPath, String variableName) {
+        return (char) retrieveFrom(objectPath, variableName);
+    }
+
+     /**
+     * Retrieves the variable from the specified path to the object casted to a boolean
+     * @param objectPath - the location path to the object that contains the variable. '/' points to the index object
+     * @param variableName - the identifier of the variable
+     * @return the primitive type of the variable as a boolean 
+     * @example Example Path: /ExampleData/Settings/shouldDisplayLines
+     * @see retrieveFrom()
+     */
+    public boolean retrieveBooleanFrom(String objectPath, String variableName) {
+        return (boolean) retrieveFrom(objectPath, variableName);
+    }
+
+     /**
+     * Retrieves the variable from the specified path to the object casted to a String
+     * @param objectPath - the location path to the object that contains the variable. '/' points to the index object
+     * @param variableName - the identifier of the variable
+     * @return the primitive type of the variable as a String 
+     * @example Example Path: /ExampleData/Settings/playerName
+     * @see retrieveFrom()
+     */
+    public String retrieveStringFrom(String objectPath, String variableName) {
+        return (String) retrieveFrom(objectPath, variableName);
+    }
+
+    /// HANDLERS
 
     /**
      * Recursively retrieves the VariableValueTypePair from the specified path

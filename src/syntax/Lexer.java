@@ -288,6 +288,7 @@ public class Lexer {
             if (is('.')) {
                 if (fullstopUsed) throw new VISTSyntaxException("Float Value Syntax Error: Duplicate full-stop found. Found: " + currentToken);
                 
+                fullstopUsed = true;
                 bobTheBuilder.append(".");
                 next();
 

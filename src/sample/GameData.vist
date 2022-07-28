@@ -13,3 +13,7 @@ gameSlot HAS (
         currentLevel IS 5;
         currentWorld IS "Overworld-5-1";
 );
+BASE item HAS (
+        name IS "Item";
+        value IS 0;
+);

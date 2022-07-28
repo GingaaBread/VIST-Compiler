@@ -28,7 +28,11 @@ public class App {
         // Create the VIST Document
         var gameData = new VIST(fileContent.toString(), true);
 
-        float levelToLoad = (float) gameData.retrieveFrom("/gameSettings/audioSettings", "masterVolume");
-        System.out.println("Loading Level " + levelToLoad + "...");
+        // Retrieve Java types from the document
+        float masterVolume = gameData.retrieveFloatFrom("/gameSettings/audioSettings/", "masterVolume");
+        System.out.println(masterVolume);
+
+        // Supports not allowing BASE objects to be retrieved
+        // System.out.println(gameData.retrieveIntFrom("/item", "value")); // NOT ALLOWED
     }
 }

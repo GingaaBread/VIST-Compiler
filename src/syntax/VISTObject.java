@@ -135,25 +135,25 @@ public class VISTObject {
             return;
         }     
 
-        System.out.println(prefix + "\t-VIST Objects:");
+        System.out.println(prefix + "\t\t-VIST Objects:");
         if (objectTypeChildren.isEmpty()) {
-            System.out.println(prefix + "\t\t--");
+            System.out.println(prefix + "\t\t\t--");
         } else {
             var iterator = objectTypeChildren.entrySet().iterator();
             while (iterator.hasNext()) {
-                System.out.print(prefix + "\t\t"); 
-                iterator.next().getValue().print("\t");
+                System.out.print(prefix + "\t\t\t"); 
+                iterator.next().getValue().print(prefix + "\t\t");
             }
         }
 
-        System.out.println(prefix + "\t-Simple Types:");
+        System.out.println(prefix + "\t\t-Simple Types:");
         if (simpleTypeChildren.isEmpty()) {
-            System.out.println(prefix + "\t\t--");
+            System.out.println(prefix + "\t\t\t--");
         } else {
             var iterator = simpleTypeChildren.entrySet().iterator();
             while (iterator.hasNext()) {
                 var item = iterator.next();
-                System.out.println(prefix + "\t\tVariable: '" + item.getKey() + "', Value: " + item.getValue().getVariableValue() + " (" + item.getValue().getSimpleType() + ")");
+                System.out.println(prefix + "\t\t\tVariable: '" + item.getKey() + "', Value: " + item.getValue().getVariableValue() + " (" + item.getValue().getSimpleType() + ")");
             }
         }
     }
