@@ -29,10 +29,12 @@ public class Lexer {
     private boolean baseObjectDetected;
     private VISTObject baseObject;
     private List<String> objectHierarchy;
-    
+    private List<VISTObject> abstractObjects;
+
     // Initialises the empty structures
     public Lexer() {
         this.objectHierarchy = new LinkedList<>();
+        abstractObjects = new LinkedList<>();
         this.baseObject = new VISTObject("/", false);
     }
 
@@ -66,6 +68,9 @@ public class Lexer {
     private void matchVariableBlockSequence() {
         while (hasNext()) {
             matchVariableBlock();
+            System.out.println(
+                objectHierarchy.toString()
+            );
         }
     }
 
@@ -153,7 +158,10 @@ public class Lexer {
     private void matchObjectTypeBody() {
         if (!is('(')) throw new VISTSyntaxException("Object Type Body Syntax Error: Illegal Character, '(' expected. Found: " + currentToken);
         else next();
-
+        
+        if (baseObjectDetected)
+            abstractObjects.add(new VISTObject(currentIdentifier, true));
+        
         // Registers the object
         objectHierarchy.add(0, currentIdentifier);
 
@@ -398,6 +406,8 @@ public class Lexer {
     private void matchFamiliarIdentifier() throws VISTSemanticException, VISTSyntaxException {
         if (isWS(currentToken)) throw new VISTSyntaxException("Identifier Syntax Error: Illegal WS");
         
+        String childIdentifier = currentIdentifier;
+
         // Collects the identifier
         StringBuilder identifier = new StringBuilder();
 
@@ -409,18 +419,30 @@ public class Lexer {
             next();
         }
 
-        // Check if there is no identifier matching this variable 
-        if (!baseObject.containsBaseVISTObject(identifier.toString())) 
-            throw new VISTSemanticException("Trying to inherit from a non-existing variable. Variable identifier: '" + identifier.toString() + "'");
-
         currentIdentifier = identifier.toString();
+
+        // Check if there is no identifier matching this variable 
+        if (abstractObjects.stream().anyMatch(obj -> obj.getIdentifier().equals(currentIdentifier))) {
+            var copy = abstractObjects.stream()
+                .filter(obj -> obj.getIdentifier().equals(currentIdentifier))
+                .findFirst()
+                .get();
+                
+            copy.include();
+            copy.setIdentifier(childIdentifier);
+
+            baseObject.addObject(
+                childIdentifier,
+                copy, 
+                objectHierarchy, 
+                objectHierarchy.size()
+            );
+        } else throw new VISTSemanticException("Trying to inherit from a non-existing variable. Variable identifier: '" + currentIdentifier + "'");
     }
 
     // Handles *( WS )
     private void matchOptionalWS() throws VISTSyntaxException {
-        while (isWS(currentToken)) {
-            next();
-        }
+        while (isWS(currentToken)) next();
     }
 
     // Advances to the next non-WS token

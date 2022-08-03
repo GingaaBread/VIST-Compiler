@@ -98,11 +98,26 @@ public class VISTObject {
     }
 
     /**
+     *  Unmarks the VISTObject as BASED
+     */
+    public void include() {
+        excluded = false;
+    }
+
+    /**
      * 
      * @return The variable identifier of the VISTObject
      */
     public String getIdentifier() {
         return identifier;
+    }
+
+    /**
+     * Renames the identifier - used for copied VISTObjects
+     * @param identifier - the new identifier of the object
+     */
+    public void setIdentifier(String identifier) {
+        this.identifier = identifier;
     }
 
     /**
@@ -121,24 +136,6 @@ public class VISTObject {
      */
     public VISTObject getObjectTypeChild(String identifier) {
         return objectTypeChildren.get(identifier);
-    }
-
-    // TODO: FIX
-    public boolean containsBaseVISTObject(String identifier) {
-        System.out.println("At: " + identifier);
-        if (objectTypeChildren.isEmpty()) return false;
-        if (this.excluded && this.identifier.equals(identifier)) return true;
-
-        System.out.println("Contains children and is not the searched item");
-
-        var iterator = objectTypeChildren.entrySet().iterator();
-        while (iterator.hasNext()) {
-            boolean found = iterator.next().getValue().containsBaseVISTObject(identifier);
-            
-            if (found) return true;
-        }
-
-        return false;
     }
 
     /**

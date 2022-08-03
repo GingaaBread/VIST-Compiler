@@ -14,7 +14,7 @@ gameSlot HAS (
         currentWorld IS "Overworld-5-1";
 );
 BASE item HAS (
-        name IS "Item";
+        name IS "Something";
         value IS 0;
 );
 excalibur USES item;
