@@ -98,10 +98,10 @@ public class VISTObject {
     }
 
     /**
-     *  Unmarks the VISTObject as BASED
+     *  Marks the VISTObject as BASED or not - used for copied VISTObjects
      */
-    public void include() {
-        excluded = false;
+    public void setExcluded(boolean excluded) {
+        this.excluded = excluded;
     }
 
     /**

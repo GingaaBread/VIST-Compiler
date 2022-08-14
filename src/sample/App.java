@@ -14,7 +14,7 @@ public class App {
       */
     public static void main(String[] args) throws Exception {
         // Create the FileReader
-        var fileReader = new FileReader(new File(".\\src\\sample\\GameData.vist").getAbsolutePath());
+        var fileReader = new FileReader(new File(".\\VIST Compiler\\src\\sample\\GameData.vist").getAbsolutePath());
         
         // Gather the characters
         var fileContent = new StringBuilder();
@@ -34,5 +34,7 @@ public class App {
 
         // Supports not allowing BASE objects to be retrieved
         // System.out.println(gameData.retrieveIntFrom("/item", "value")); // NOT ALLOWED
+
+        fileReader.close();
     }
 }

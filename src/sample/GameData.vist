@@ -18,3 +18,4 @@ BASE item HAS (
         value IS 0;
 );
 excalibur USES item;
+bloodyMarry USES item;

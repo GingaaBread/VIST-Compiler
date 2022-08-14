@@ -17,7 +17,7 @@ import utility.VISTSemanticException;
  *  @see Collector
  *  @see VISTSyntaxException
  */
-public class Lexer {
+public class Compiler {
     /// SCANNING VARIABLES
     private String text;
     private char currentToken;
@@ -27,12 +27,14 @@ public class Lexer {
     private String currentValue, currentIdentifier;
     private SimpleType currentType;
     private boolean baseObjectDetected;
+    
+    /// HIERARCHIES
     private VISTObject baseObject;
     private List<String> objectHierarchy;
     private List<VISTObject> abstractObjects;
 
     // Initialises the empty structures
-    public Lexer() {
+    public Compiler() {
         this.objectHierarchy = new LinkedList<>();
         abstractObjects = new LinkedList<>();
         this.baseObject = new VISTObject("/", false);
@@ -66,12 +68,7 @@ public class Lexer {
 
     // VariableBlockSequence := *( VariableBlock )
     private void matchVariableBlockSequence() {
-        while (hasNext()) {
-            matchVariableBlock();
-            System.out.println(
-                objectHierarchy.toString()
-            );
-        }
+        while (hasNext()) matchVariableBlock();
     }
 
     // VariableBlock := BaseObject | [ Identifier WS [ PrimitiveVariableBlockBody | ObjectVariableBlockBody | InheritedVariableBlockBody ] ]
@@ -86,13 +83,9 @@ public class Lexer {
             matchPrimitiveVariableBlockBody();
         }
         // Check if object
-        else if (is('h')) {
-            matchObjectVariableBlockBody();
-        }
+        else if (is('h')) matchObjectVariableBlockBody();
         // Check if inherited
-        else if (is('u')) {
-            matchInheritedVariableBlockBody();
-        }
+        else if (is('u')) matchInheritedVariableBlockBody();
     }
 
     // PrimitiveVariableBlockBody := PrimitiveTypeAssignment WS Value Separator
@@ -159,8 +152,11 @@ public class Lexer {
         if (!is('(')) throw new VISTSyntaxException("Object Type Body Syntax Error: Illegal Character, '(' expected. Found: " + currentToken);
         else next();
         
-        if (baseObjectDetected)
+        if (baseObjectDetected) {
+            System.out.println("Adding abstract object " + currentIdentifier);
             abstractObjects.add(new VISTObject(currentIdentifier, true));
+        }
+            
         
         // Registers the object
         objectHierarchy.add(0, currentIdentifier);
@@ -428,7 +424,7 @@ public class Lexer {
                 .findFirst()
                 .get();
                 
-            copy.include();
+            copy.setExcluded(baseObjectDetected);
             copy.setIdentifier(childIdentifier);
 
             baseObject.addObject(

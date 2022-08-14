@@ -2,7 +2,7 @@ package generation;
 
 import java.util.NoSuchElementException;
 
-import syntax.Lexer;
+import syntax.Compiler;
 import syntax.VISTObject;
 import utility.VISTSemanticException;
 import utility.VariableValueTypePair;
@@ -16,7 +16,7 @@ import utility.VariableValueTypePair;
  */
 public class VIST {
     private VISTObject baseObject; // keeps track of all VIST objects
-    private Lexer lexer; // the lexer compiling the document
+    private Compiler lexer; // the lexer compiling the document
 
     /**
      * Creates the VIST compiler and automatically starts parsing
@@ -24,7 +24,7 @@ public class VIST {
      * @param printDebugLogs - should the compiler print console logs for debug purposes?
      */
     public VIST(final String vistDocument, boolean printDebugLogs) {
-        lexer = new Lexer();
+        lexer = new Compiler();
         
         // Starts the parsing process in the lexer
         baseObject = lexer.match(vistDocument, printDebugLogs);
